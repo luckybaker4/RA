@@ -58,6 +58,8 @@ void setup()
     ReefAngel.DCPump.FeedingSpeed=0;
     ReefAngel.DCPump.WaterChangeSpeed=0;
 
+    //Enable Salinity Temp Compensation 
+    ReefAngel.Salinity.SetCompensation(0);
 
     // Ports that are always on
     ReefAngel.Relay.On( Port3 );
