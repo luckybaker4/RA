@@ -44,12 +44,16 @@ void setup()
     ReefAngel.AddWaterLevelExpansion();  // Water Level Expansion Module
     // Ports toggled in Feeding Mode
     ReefAngel.FeedingModePorts = Port3Bit | Port4Bit;
+    ReefAngel.FeedingModePortsE[0] = Port3Bit | Port4Bit;
     // Ports toggled in Water Change Mode
-    ReefAngel.WaterChangePorts = Port3Bit | Port7Bit;
+    ReefAngel.WaterChangePorts = Port7Bit;
+    ReefAngel.WaterChangePortsE[0] = 0;
     // Ports toggled when Lights On / Off menu entry selected
     ReefAngel.LightsOnPorts = 0;
+    ReefAngel.LightsOnPortsE[0] = 0;
     // Ports turned off when Overheat temperature exceeded
     ReefAngel.OverheatShutoffPorts = 0;
+    ReefAngel.OverheatShutoffPortsE[0] = Port1Bit;
     // Use T1 probe as temperature and overheat functions
     ReefAngel.TempProbe = T1_PROBE;
     ReefAngel.OverheatProbe = T1_PROBE;
@@ -58,11 +62,14 @@ void setup()
     ReefAngel.DCPump.FeedingSpeed=0;
     ReefAngel.DCPump.WaterChangeSpeed=0;
 
-    //Enable Salinity Temp Compensation 
+    //Enable Salinity Temp Compensation
     ReefAngel.Salinity.SetCompensation(0);
 
     // Ports that are always on
     ReefAngel.Relay.On( Port3 );
+    ReefAngel.Relay.On( Port4 );
+    ReefAngel.Relay.On( Box1_Port3 );
+    ReefAngel.Relay.On( Box1_Port4 );
 
     ////// Place additional initialization code below here
     
@@ -74,11 +81,11 @@ void loop()
 {
     ReefAngel.StandardHeater( Port1 );
     ReefAngel.StandardHeater( Port2 );
-    ReefAngel.Relay.DelayedOn( Port4 );
     ReefAngel.DosingPumpRepeat1( Port5 );
     ReefAngel.DosingPumpRepeat2( Port6 );
     ReefAngel.WaterLevelATO( Port7 );
-    ReefAngel.DayLights( Port8 );
+    ReefAngel.DayLights( Box1_Port1 );
+    ReefAngel.ActinicLights( Box1_Port2 );
     ReefAngel.DCPump.UseMemory = true;
     ReefAngel.DCPump.DaylightChannel = Sync;
     ReefAngel.DCPump.ActinicChannel = AntiSync;
@@ -91,5 +98,3 @@ void loop()
     ReefAngel.Portal( "luckybaker4" );
     ReefAngel.ShowInterface();
 }
-
-
