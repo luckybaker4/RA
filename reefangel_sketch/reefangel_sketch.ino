@@ -36,12 +36,17 @@
 ////// Place global variable code above here
 
 // Define Custom Memory Locations
-#define Mem_Water_Change_On_Hour       100
-#define Mem_Water_Change_On_Minute     101
-#define Mem_Water_Change_Off_Hour      102
-#define Mem_Water_Change_Off_Minute    103
-#define Mem_Water_Change_WL_High       104
-#define Mem_Water_Change_WL_Low        105
+
+#define Mem_I_Water_Change_On_Hour       100
+#define Mem_I_Water_Change_On_Minute     101
+#define Mem_I_Water_Change_Off_Hour      102
+#define Mem_I_Water_Change_Off_Minute    103
+#define Mem_I_Water_Change_WL_High       104
+#define Mem_I_Water_Change_WL_Low        105
+#define Mem_B_Water_Change_Enabled       106
+#define Mem_B_AutoFeed_Enabled           107
+#define Mem_I_AutoFeed_Hour              108
+#define Mem_I_AutoFeed_Minute            109
 
 void setup()
 {
@@ -81,6 +86,9 @@ void setup()
 
     ////// Place additional initialization code below here
     
+    //Set Auto Water Change to False
+    InternalMemory.write(Mem_B_Water_Change_Enabled,false);
+    InternalMemory.write(Mem_B_AutoFeed_Enabled,false);
 
     ////// Place additional initialization code above here
 }
@@ -99,26 +107,29 @@ void loop()
     ReefAngel.DCPump.ActinicChannel = AntiSync;
     ////// Place your custom code below here
 
-    //Perform the water change if the time maps and our water level is within range
-    if ( hour() >= InternalMemory.read(Mem_Water_Change_On_Hour) && hour() <= InternalMemory.read(Mem_Water_Change_Off_Hour)  && minute() >= InternalMemory.read(Mem_Water_Change_On_Minute) && minute() < InternalMemory.read(Mem_Water_Change_Off_Minute) && ( ReefAngel.WaterLevel.GetLevel(1) <= InternalMemory.read(Mem_Water_Change_WL_High) && ReefAngel.WaterLevel.GetLevel(1)>= InternalMemory.read(Mem_Water_Change_WL_Low) ) ) {
-        // Turn off ATO
-        ReefAngel.Relay.Override(Port7,0);
-        // Turn Water Change Port On
-        ReefAngel.Relay.On(Port8);
-      }  else {
-        // Set ATO port back to auto
-        ReefAngel.Relay.Override(Port7,2);
-        // Turn Water Change Port Off
-        ReefAngel.Relay.Off(Port8);
-      }
+    //check to see if water changes are enabled, if they are, start the routine
+    if (InternalMemory.read(Mem_B_Water_Change_Enabled)) {
+        //Perform the water change if the time maps and our water level is within range
+        if ( hour() >= InternalMemory.read(Mem_I_Water_Change_On_Hour) && hour() <= InternalMemory.read(Mem_I_Water_Change_Off_Hour)  && minute() >= InternalMemory.read(Mem_I_Water_Change_On_Minute) && minute() < InternalMemory.read(Mem_I_Water_Change_Off_Minute) && ( ReefAngel.WaterLevel.GetLevel(1) <= InternalMemory.read(Mem_I_Water_Change_WL_High) && ReefAngel.WaterLevel.GetLevel(1)>= InternalMemory.read(Mem_I_Water_Change_WL_Low) ) ) {
+            // Turn off ATO
+            ReefAngel.Relay.Override(Port7,0);
+            // Turn Water Change Port On
+            ReefAngel.Relay.On(Port8);
+          }  else {
+            // Set ATO port back to auto
+            ReefAngel.Relay.Override(Port7,2);
+            // Turn Water Change Port Off
+            ReefAngel.Relay.Off(Port8);
+          }
+    }
 
-//Feeding mode timer
-// http://forum.reefangel.com/viewtopic.php?f=12&t=3390&hilit=clear+override
-  // feed at 5pm and 9pm
-  //if ( (now()%86400==61200) || (now()%86400==75600) ) {
-//  FeedingModeStart();
-// }
-
+    //Feeding mode timer
+    // http://forum.reefangel.com/viewtopic.php?f=12&t=3390&hilit=clear+override
+    if (InternalMemory.read(Mem_B_AutoFeed_Enabled)) {
+        //if ( hour() == InternalMemory.read(Mem_I_AutoFeed_Hour) && minute() == InternalMemory.read(Mem_I_AutoFeed_Hour) ){
+            ReefAngel.FeedingModeStart();
+        //}
+    }
 
     ////// Place your custom code above here
 
