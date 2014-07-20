@@ -32,16 +32,24 @@
 ////// Place global variable code below here
 
 
+
 ////// Place global variable code above here
 
+// Define Custom Memory Locations
+#define Mem_Water_Change_On_Hour       100
+#define Mem_Water_Change_On_Minute     101
+#define Mem_Water_Change_Off_Hour      102
+#define Mem_Water_Change_Off_Minute    103
+#define Mem_Water_Change_WL_High       104
+#define Mem_Water_Change_WL_Low        105
 
 void setup()
 {
     // This must be the first line
-    ReefAngel.Init();  //Initialize controller
-    ReefAngel.Use2014Screen();  // Let's use 2014 Screen 
-    ReefAngel.AddSalinityExpansion();  // Salinity Expansion Module
-    ReefAngel.AddWaterLevelExpansion();  // Water Level Expansion Module
+    ReefAngel.Init(); //Initialize controller
+    ReefAngel.Use2014Screen(); // Let's use 2014 Screen
+    ReefAngel.AddSalinityExpansion(); // Salinity Expansion Module
+    ReefAngel.AddWaterLevelExpansion(); // Water Level Expansion Module
     // Ports toggled in Feeding Mode
     ReefAngel.FeedingModePorts = Port3Bit | Port4Bit;
     ReefAngel.FeedingModePortsE[0] = Port3Bit | Port4Bit;
@@ -90,7 +98,27 @@ void loop()
     ReefAngel.DCPump.DaylightChannel = Sync;
     ReefAngel.DCPump.ActinicChannel = AntiSync;
     ////// Place your custom code below here
-    
+
+    //Perform the water change if the time maps and our water level is within range
+    if ( hour() >= InternalMemory.read(Mem_Water_Change_On_Hour) && hour() <= InternalMemory.read(Mem_Water_Change_Off_Hour)  && minute() >= InternalMemory.read(Mem_Water_Change_On_Minute) && minute() < InternalMemory.read(Mem_Water_Change_Off_Minute) && ( ReefAngel.WaterLevel.GetLevel(1) <= InternalMemory.read(Mem_Water_Change_WL_High) && ReefAngel.WaterLevel.GetLevel(1)>= InternalMemory.read(Mem_Water_Change_WL_Low) ) ) {
+        // Turn off ATO
+        ReefAngel.Relay.Override(Port7,0);
+        // Turn Water Change Port On
+        ReefAngel.Relay.On(Port8);
+      }  else {
+        // Set ATO port back to auto
+        ReefAngel.Relay.Override(Port7,2);
+        // Turn Water Change Port Off
+        ReefAngel.Relay.Off(Port8);
+      }
+
+//Feeding mode timer
+// http://forum.reefangel.com/viewtopic.php?f=12&t=3390&hilit=clear+override
+  // feed at 5pm and 9pm
+  //if ( (now()%86400==61200) || (now()%86400==75600) ) {
+//  FeedingModeStart();
+// }
+
 
     ////// Place your custom code above here
 
