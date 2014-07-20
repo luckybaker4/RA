@@ -90,7 +90,8 @@ void loop()
     ReefAngel.DCPump.DaylightChannel = Sync;
     ReefAngel.DCPump.ActinicChannel = AntiSync;
     ////// Place your custom code below here
-    
+    //Run water change port for 1 hour from 7 to 8
+    ReefAngel.StandardLights( Port8,19,0,20,0 )
 
     ////// Place your custom code above here
 
