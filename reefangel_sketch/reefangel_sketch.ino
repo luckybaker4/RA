@@ -47,6 +47,7 @@
 #define Mem_B_AutoFeed_Enabled           107
 #define Mem_I_AutoFeed_Hour              108
 #define Mem_I_AutoFeed_Minute            109
+#define Mem_I_Debug                      110
 
 void setup()
 {
@@ -110,26 +111,29 @@ void loop()
     //check to see if water changes are enabled, if they are, start the routine
     if (InternalMemory.read(Mem_B_Water_Change_Enabled)) {
         //Perform the water change if the time maps and our water level is within range
-        if ( hour() >= InternalMemory.read(Mem_I_Water_Change_On_Hour) && hour() <= InternalMemory.read(Mem_I_Water_Change_Off_Hour)  && minute() >= InternalMemory.read(Mem_I_Water_Change_On_Minute) && minute() < InternalMemory.read(Mem_I_Water_Change_Off_Minute) && ( ReefAngel.WaterLevel.GetLevel(1) <= InternalMemory.read(Mem_I_Water_Change_WL_High) && ReefAngel.WaterLevel.GetLevel(1)>= InternalMemory.read(Mem_I_Water_Change_WL_Low) ) ) {
-            // Turn off ATO
-            ReefAngel.Relay.Override(Port7,0);
-            // Turn Water Change Port On
-            ReefAngel.Relay.On(Port8);
-          }  else {
-            // Set ATO port back to auto
-            ReefAngel.Relay.Override(Port7,2);
-            // Turn Water Change Port Off
-            ReefAngel.Relay.Off(Port8);
-          }
+        if ( ReefAngel.WaterLevel.GetLevel(0) <= InternalMemory.read(Mem_I_Water_Change_WL_High) && ReefAngel.WaterLevel.GetLevel(0)>= InternalMemory.read(Mem_I_Water_Change_WL_Low)) {
+            // Use Standard Light port to determine if we are scheduled for a water change
+            ReefAngel.StandardLights(Port8,InternalMemory.read(Mem_I_Water_Change_On_Hour),InternalMemory.read(Mem_I_Water_Change_On_Minute),InternalMemory.read(Mem_I_Water_Change_Off_Hour),InternalMemory.read(Mem_I_Water_Change_Off_Minute));
+        }
+    }
+    //if the water change port is on, we need to override the ATO port and set it to off
+    if ( ReefAngel.Relay.Status(Port8) ) {
+        ReefAngel.Relay.Override(Port7,0);
+    }
+    //set it back to auto if the port is not on
+    else {
+        ReefAngel.Relay.Override(Port7,2);
     }
 
     //Feeding mode timer
     // http://forum.reefangel.com/viewtopic.php?f=12&t=3390&hilit=clear+override
+    //http://forum.reefangel.com/viewtopic.php?f=12&t=1915&p=15149&hilit=schedule+feed+mode#p15149
     if (InternalMemory.read(Mem_B_AutoFeed_Enabled)) {
-        //if ( hour() == InternalMemory.read(Mem_I_AutoFeed_Hour) && minute() == InternalMemory.read(Mem_I_AutoFeed_Hour) ){
+        if ( hour()==InternalMemory.read(Mem_I_AutoFeed_Hour) && minute()==InternalMemory.read(Mem_I_AutoFeed_Minute) && second()==0 ){
             ReefAngel.FeedingModeStart();
-        //}
+        }
     }
+    //End Feeding mode timer
 
     ////// Place your custom code above here
 
