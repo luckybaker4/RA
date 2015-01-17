@@ -108,13 +108,19 @@ void loop()
     ReefAngel.DCPump.ActinicChannel = AntiSync;
     ////// Place your custom code below here
 
+    //check to see if the water levels are out of whack, if so, disable water change
+    if ( ReefAngel.WaterLevel.GetLevel(0) <= InternalMemory.read(Mem_I_Water_Change_WL_High) && ReefAngel.WaterLevel.GetLevel(0)>= InternalMemory.read(Mem_I_Water_Change_WL_Low)) {
+        ReefAngel.Relay.Override(Port8,0);
+    }
+        //set it back to auto if we are within range
+    else {
+        ReefAngel.Relay.Override(Port8,2);
+    }
+
     //check to see if water changes are enabled, if they are, start the routine
     if (InternalMemory.read(Mem_B_Water_Change_Enabled)) {
-        //Perform the water change if the time maps and our water level is within range
-        if ( ReefAngel.WaterLevel.GetLevel(0) <= InternalMemory.read(Mem_I_Water_Change_WL_High) && ReefAngel.WaterLevel.GetLevel(0)>= InternalMemory.read(Mem_I_Water_Change_WL_Low)) {
-            // Use Standard Light port to determine if we are scheduled for a water change
-            ReefAngel.StandardLights(Port8,InternalMemory.read(Mem_I_Water_Change_On_Hour),InternalMemory.read(Mem_I_Water_Change_On_Minute),InternalMemory.read(Mem_I_Water_Change_Off_Hour),InternalMemory.read(Mem_I_Water_Change_Off_Minute));
-        }
+        // Use Standard Light port to determine if we are scheduled for a water change
+        ReefAngel.StandardLights(Port8,InternalMemory.read(Mem_I_Water_Change_On_Hour),InternalMemory.read(Mem_I_Water_Change_On_Minute),InternalMemory.read(Mem_I_Water_Change_Off_Hour),InternalMemory.read(Mem_I_Water_Change_Off_Minute));
     }
     //if the water change port is on, we need to override the ATO port and set it to off
     if ( ReefAngel.Relay.Status(Port8) ) {
@@ -135,6 +141,12 @@ void loop()
     }
     //End Feeding mode timer
 
+    //Setup Web Portal Authentication
+    ReefAngel.Network.WifiAuthentication("replace:replace");
+    
+    //Register DDNS
+    ReefAngel.DDNS("reeftank");
+    
     ////// Place your custom code above here
 
     // This should always be the last line
