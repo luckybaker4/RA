@@ -32,16 +32,30 @@
 ////// Place global variable code below here
 
 
+
 ////// Place global variable code above here
 
+// Define Custom Memory Locations
+
+#define Mem_I_Water_Change_On_Hour       100
+#define Mem_I_Water_Change_On_Minute     101
+#define Mem_I_Water_Change_Off_Hour      102
+#define Mem_I_Water_Change_Off_Minute    103
+#define Mem_I_Water_Change_WL_High       104
+#define Mem_I_Water_Change_WL_Low        105
+#define Mem_B_Water_Change_Enabled       106
+#define Mem_B_AutoFeed_Enabled           107
+#define Mem_I_AutoFeed_Hour              108
+#define Mem_I_AutoFeed_Minute            109
+#define Mem_I_Debug                      110
 
 void setup()
 {
     // This must be the first line
-    ReefAngel.Init();  //Initialize controller
-    ReefAngel.Use2014Screen();  // Let's use 2014 Screen 
-    ReefAngel.AddSalinityExpansion();  // Salinity Expansion Module
-    ReefAngel.AddWaterLevelExpansion();  // Water Level Expansion Module
+    ReefAngel.Init(); //Initialize controller
+    ReefAngel.Use2014Screen(); // Let's use 2014 Screen
+    ReefAngel.AddSalinityExpansion(); // Salinity Expansion Module
+    ReefAngel.AddWaterLevelExpansion(); // Water Level Expansion Module
     // Ports toggled in Feeding Mode
     ReefAngel.FeedingModePorts = Port3Bit | Port4Bit;
     ReefAngel.FeedingModePortsE[0] = Port3Bit | Port4Bit;
@@ -73,6 +87,9 @@ void setup()
 
     ////// Place additional initialization code below here
     
+    //Set Auto Water Change to False
+    InternalMemory.write(Mem_B_Water_Change_Enabled,false);
+    InternalMemory.write(Mem_B_AutoFeed_Enabled,false);
 
     ////// Place additional initialization code above here
 }
@@ -90,9 +107,46 @@ void loop()
     ReefAngel.DCPump.DaylightChannel = Sync;
     ReefAngel.DCPump.ActinicChannel = AntiSync;
     ////// Place your custom code below here
-    //Run water change port for 1 hour from 7 to 8
-    ReefAngel.StandardLights( Port8,19,0,20,0 )
 
+    //check to see if the water levels are out of whack, if so, disable water change
+    if ( ReefAngel.WaterLevel.GetLevel(0) <= InternalMemory.read(Mem_I_Water_Change_WL_High) && ReefAngel.WaterLevel.GetLevel(0)>= InternalMemory.read(Mem_I_Water_Change_WL_Low)) {
+        ReefAngel.Relay.Override(Port8,0);
+    }
+        //set it back to auto if we are within range
+    else {
+        ReefAngel.Relay.Override(Port8,2);
+    }
+
+    //check to see if water changes are enabled, if they are, start the routine
+    if (InternalMemory.read(Mem_B_Water_Change_Enabled)) {
+        // Use Standard Light port to determine if we are scheduled for a water change
+        ReefAngel.StandardLights(Port8,InternalMemory.read(Mem_I_Water_Change_On_Hour),InternalMemory.read(Mem_I_Water_Change_On_Minute),InternalMemory.read(Mem_I_Water_Change_Off_Hour),InternalMemory.read(Mem_I_Water_Change_Off_Minute));
+    }
+    //if the water change port is on, we need to override the ATO port and set it to off
+    if ( ReefAngel.Relay.Status(Port8) ) {
+        ReefAngel.Relay.Override(Port7,0);
+    }
+    //set it back to auto if the port is not on
+    else {
+        ReefAngel.Relay.Override(Port7,2);
+    }
+
+    //Feeding mode timer
+    // http://forum.reefangel.com/viewtopic.php?f=12&t=3390&hilit=clear+override
+    //http://forum.reefangel.com/viewtopic.php?f=12&t=1915&p=15149&hilit=schedule+feed+mode#p15149
+    if (InternalMemory.read(Mem_B_AutoFeed_Enabled)) {
+        if ( hour()==InternalMemory.read(Mem_I_AutoFeed_Hour) && minute()==InternalMemory.read(Mem_I_AutoFeed_Minute) && second()==0 ){
+            ReefAngel.FeedingModeStart();
+        }
+    }
+    //End Feeding mode timer
+
+    //Setup Web Portal Authentication
+    ReefAngel.Network.WifiAuthentication("replace:replace");
+    
+    //Register DDNS
+    ReefAngel.DDNS("reeftank");
+    
     ////// Place your custom code above here
 
     // This should always be the last line
