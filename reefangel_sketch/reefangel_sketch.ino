@@ -48,6 +48,8 @@
 #define Mem_I_AutoFeed_Hour              108
 #define Mem_I_AutoFeed_Minute            109
 #define Mem_I_Debug                      110
+#define Mem_I_ZeoVit_Frequency           111
+#define Mem_I_ZeoVit_Duration            112
 
 void setup()
 {
@@ -97,7 +99,7 @@ void setup()
 void loop()
 {
     ReefAngel.StandardHeater( Port1 );
-    ReefAngel.StandardHeater( Port2 );
+    ReefAngel.DosingPumpRepeat( Port2,0,InternalMemory.read(Mem_I_ZeoVit_Frequency),InternalMemory.read(Mem_I_ZeoVit_Duration) );
     ReefAngel.DosingPumpRepeat1( Port5 );
     ReefAngel.DosingPumpRepeat2( Port6 );
     ReefAngel.WaterLevelATO( Port7 );
