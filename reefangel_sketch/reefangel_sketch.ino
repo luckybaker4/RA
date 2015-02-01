@@ -119,19 +119,18 @@ void loop()
     static WiFiAlert awcDeviateAlert;
 
     //check to see if the water levels are out of whack, if so, disable water change
-    if ( ReefAngel.WaterLevel.GetLevel(0) >= InternalMemory.read(Mem_I_Water_Change_WL_High) && ReefAngel.WaterLevel.GetLevel(0)<= InternalMemory.read(Mem_I_Water_Change_WL_Low)) {
+    if ( ReefAngel.WaterLevel.GetLevel(0) >= InternalMemory.read(Mem_I_Water_Change_WL_High) || ReefAngel.WaterLevel.GetLevel(0)<= InternalMemory.read(Mem_I_Water_Change_WL_Low)) {
         awcAlert.Send("Sump Levels out of range.  AWC disabled!");
         ReefAngel.Relay.Override(Port8,0);
+    }
+    //check to see if water changes are enabled, if they are, start the routine
+    else if (InternalMemory.read(Mem_B_Water_Change_Enabled)) {
+        // Use Standard Light port to determine if we are scheduled for a water change
+        ReefAngel.StandardLights(Port8,InternalMemory.read(Mem_I_Water_Change_On_Hour),InternalMemory.read(Mem_I_Water_Change_On_Minute),InternalMemory.read(Mem_I_Water_Change_Off_Hour),InternalMemory.read(Mem_I_Water_Change_Off_Minute));
     }
         //set it back to auto if we are within range
     else {
         ReefAngel.Relay.Override(Port8,2);
-    }
-
-    //check to see if water changes are enabled, if they are, start the routine
-    if (InternalMemory.read(Mem_B_Water_Change_Enabled)) {
-        // Use Standard Light port to determine if we are scheduled for a water change
-        ReefAngel.StandardLights(Port8,InternalMemory.read(Mem_I_Water_Change_On_Hour),InternalMemory.read(Mem_I_Water_Change_On_Minute),InternalMemory.read(Mem_I_Water_Change_Off_Hour),InternalMemory.read(Mem_I_Water_Change_Off_Minute));
     }
     
     //grab the water level at the begging of the awc to make sure it doesn't +/- too much water
@@ -217,7 +216,7 @@ void loop()
     ////// Place your custom code above here
 
     // This should always be the last line
-    ReefAngel.Portal( "luckybaker4" );
+    ReefAngel.Portal( "luckybaker4","11613");
     ReefAngel.ShowInterface();
 }
 
