@@ -168,7 +168,7 @@ void loop()
     static unsigned long dosing;
     if (ReefAngel.DisplayedMenu==WATERCHANGE_MODE) dosing=now();
 
-    if (now()-dosing>1800) {
+    if (now()-dosing<1800) {
       //turn skimmer off for 30 minutes
       ReefAngel.Relay.Override(Port4,0);
     }
