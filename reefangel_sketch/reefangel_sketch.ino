@@ -163,6 +163,19 @@ void loop()
         }
     }
     //End Feeding mode timer
+    
+    // Set timer when in water change mode
+    static unsigned long dosing;
+    if (ReefAngel.DisplayedMenu==WATERCHANGE_MODE) dosing=now();
+
+    if (now()-dosing>1800) {
+      //turn skimmer off for 30 minutes
+      ReefAngel.Relay.Override(Port4,0);
+    }
+    else {
+      //Set skimmer back to auto
+      ReefAngel.Relay.Override(Port4,2); 
+    }
 
 
     //Random mode for Jabeo pumps
