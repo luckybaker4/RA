@@ -66,8 +66,8 @@ void setup()
     ReefAngel.FeedingModePorts = Port3Bit | Port4Bit;
     ReefAngel.FeedingModePortsE[0] = Port3Bit | Port4Bit;
     // Ports toggled in Water Change Mode
-    ReefAngel.WaterChangePorts = Port7Bit;
-    ReefAngel.WaterChangePortsE[0] = 0;
+    //ReefAngel.WaterChangePorts = Port7Bit;
+    //ReefAngel.WaterChangePortsE[0] = 0;
     // Ports toggled when Lights On / Off menu entry selected
     ReefAngel.LightsOnPorts = 0;
     ReefAngel.LightsOnPortsE[0] = 0;
