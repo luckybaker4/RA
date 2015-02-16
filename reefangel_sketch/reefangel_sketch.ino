@@ -117,20 +117,23 @@ void loop()
     //Enable wifi alert
     static WiFiAlert awcAlert;
     static WiFiAlert awcDeviateAlert;
-
-    //check to see if the water levels are out of whack, if so, disable water change
-    if ( ReefAngel.WaterLevel.GetLevel(0) >= InternalMemory.read(Mem_I_Water_Change_WL_High) || ReefAngel.WaterLevel.GetLevel(0)<= InternalMemory.read(Mem_I_Water_Change_WL_Low)) {
-        awcAlert.Send("Sump Levels out of range.  AWC disabled!");
-        ReefAngel.Relay.Override(Port8,0);
-    }
-    //check to see if water changes are enabled, if they are, start the routine
-    else if (InternalMemory.read(Mem_B_Water_Change_Enabled)) {
-        // Use Standard Light port to determine if we are scheduled for a water change
-        ReefAngel.StandardLights(Port8,InternalMemory.read(Mem_I_Water_Change_On_Hour),InternalMemory.read(Mem_I_Water_Change_On_Minute),InternalMemory.read(Mem_I_Water_Change_Off_Hour),InternalMemory.read(Mem_I_Water_Change_Off_Minute));
-    }
-        //set it back to auto if we are within range
-    else {
-        ReefAngel.Relay.Override(Port8,2);
+    
+    
+    //Water change routine
+    if (InternalMemory.read(Mem_B_Water_Change_Enabled)) {
+        if ( ( hour()>=InternalMemory.read(Mem_I_Water_Change_On_Hour) && minute()>=InternalMemory.read(Mem_I_Water_Change_On_Minute) ) // we are past the start of the scheduled water change
+            && ( hour()<InternalMemory.read(Mem_I_Water_Change_Off_Hour) && minute()<InternalMemory.read(Mem_I_Water_Change_Off_Minute) )) //we are before the end of the scheduled water change
+        {
+                //check to see if the water levels when out of whack during AWC, if so, disable water change
+                if ( ReefAngel.WaterLevel.GetLevel(0) >= InternalMemory.read(Mem_I_Water_Change_WL_High) || ReefAngel.WaterLevel.GetLevel(0)<= InternalMemory.read(Mem_I_Water_Change_WL_Low)) {
+                  awcAlert.Send("Sump Levels out of range.  AWC disabled!");
+                  ReefAngel.Relay.Override(Port8,0);
+                }
+                ReefAngel.Relay.Set(Port8,true);
+        }
+        else {
+          ReefAngel.Relay.Set(Port8,false);
+        }
     }
     
     //if the water change port is on, we need to override the ATO port and set it to off
@@ -141,6 +144,7 @@ void loop()
     else {
         ReefAngel.Relay.Override(Port7,2);
     }
+    //End Water Change Routine
 
     //Feeding mode timer
     // http://forum.reefangel.com/viewtopic.php?f=12&t=3390&hilit=clear+override
@@ -164,7 +168,6 @@ void loop()
       //Set skimmer back to auto
       ReefAngel.Relay.Override(Port4,2); 
     }
-
 
     //Random mode for Jabeo pumps
     //http://forum.reefangel.com/viewtopic.php?f=11&t=3873&p=32519&hilit=kalk+stir#p32519
