@@ -133,21 +133,9 @@ void loop()
         ReefAngel.Relay.Override(Port8,2);
     }
     
-    //grab the water level at the begging of the awc to make sure it doesn't +/- too much water
-    //if ( hour()==InternalMemory.read(Mem_I_Water_Change_On_Hour) && minute()==InternalMemory.read(Mem_I_Water_Change_On_Minute) && second()==0 ){
-    //        awcStartLevel=ReefAngel.WaterLevel.GetLevel(0);            
-    //}
-    
     //if the water change port is on, we need to override the ATO port and set it to off
     if ( ReefAngel.Relay.Status(Port8) ) {
         ReefAngel.Relay.Override(Port7,0);
-    //    // if we deviate more than 3% turn off the water change and alert
-    //   if ( awcStartLevel-ReefAngel.WaterLevel.GetLevel(0) > 6 || awcStartLevel-ReefAngel.WaterLevel.GetLevel(0) < -6 ){
-          
-    //        awcDeviateAlert.Send("Sump level deviated greater than range during AWC!");
-   //         InternalMemory.write(Mem_I_Debug,awcStartLevel);
-   //         InternalMemory.write(Mem_I_Debug2,awcStartLevel-ReefAngel.WaterLevel.GetLevel(0));
-   //         ReefAngel.Relay.Override(Port8,0);
         }
     //set it back to auto if the port is not on
     else {
